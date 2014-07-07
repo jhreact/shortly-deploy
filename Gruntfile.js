@@ -3,6 +3,16 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        // define a string to put between each file int eh concatenated output
+        separator: ';'
+      },
+      dist: {
+        // the files to concatenate
+        src: ['public/lib/**/*.js'],
+        // the location of the resulting JS file
+        dest: 'public/dist/<%= pkg.name %>.js'
+      }
     },
 
     mochaTest: {
@@ -21,12 +31,20 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        // the banner is inserted at the top of the output
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+      },
+      dist: {
+        files: {
+          'public/dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+        }
+      }
     },
 
     jshint: {
-      files: [
-        // Add filespec list here
-      ],
+      // define the files to lint
+      files: ['gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
       options: {
         force: 'true',
         jshintrc: '.jshintrc',
@@ -47,8 +65,10 @@ module.exports = function(grunt) {
           'public/lib/**/*.js',
         ],
         tasks: [
+          'jshint',
           'concat',
-          'uglify'
+          'uglify',
+          'mochaTest'
         ]
       },
       css: {
@@ -108,5 +128,5 @@ module.exports = function(grunt) {
     // add your deploy tasks here
   ]);
 
-
+  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
 };
